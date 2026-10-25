@@ -26,5 +26,8 @@ module AiCrmEngine
 
     # Don't generate system test files.
     config.generators.system_tests = nil
+
+    # Use Sidekiq for background job processing
+    config.active_job.queue_adapter = :sidekiq
   end
 end

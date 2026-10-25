@@ -17,9 +17,11 @@ default: &default
   encoding: unicode
   # For details on connection pooling, see Rails configuration guide
   # https://guides.rubyonrails.org/configuring.html#database-pooling
-  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-
-
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  host: localhost
+  port: 5432
+  username: <%= ENV.fetch("POSTGRES_USER") { `whoami`.strip } %>
+  password: <%= ENV.fetch("POSTGRES_PASSWORD") { "" } %>
 development:
   <<: *default
   database: ai_crm_engine_development

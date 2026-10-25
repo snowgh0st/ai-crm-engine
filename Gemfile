@@ -6,6 +6,10 @@ gem "rails", "~> 8.1.4"
 gem "propshaft"
 # Use postgresql as the database for Active Record
 gem "pg", "~> 1.1"
+# Use Active Record PostgreSQL extensions for vector search [https://github.com/pgvector/pgvector]
+gem 'pgvector'
+
+gem 'sidekiq'
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
@@ -16,6 +20,11 @@ gem "turbo-rails"
 gem "stimulus-rails"
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
 gem "jbuilder"
+
+
+gem 'ruby-openai'
+
+gem 'neighbor'
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 # gem "bcrypt", "~> 3.1.7"
@@ -52,6 +61,9 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  # Use the `dotenv` gem to load environment variables from `.env` files in development and test environments [
+  gem 'dotenv-rails'
 end
 
 group :development do
