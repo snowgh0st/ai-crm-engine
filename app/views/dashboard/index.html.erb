@@ -1,0 +1,161 @@
+<div class="min-h-screen bg-slate-900 text-slate-100 p-8 font-sans">
+  <div class="max-w-7xl mx-auto space-y-8">
+    
+    <!-- Header Section -->
+    <header class="flex justify-between items-center border-b border-slate-800 pb-6">
+      <div>
+        <h1 class="text-3xl font-extrabold tracking-tight text-white flex items-center gap-3">
+          <span class="bg-gradient-to-r from-blue-500 to-indigo-500 text-transparent bg-clip-text">Enterprise Knowledge</span> & CRM Engine
+        </h1>
+        <p class="text-slate-400 text-sm mt-1">Rails 7 • pgvector • Sidekiq • OpenAI GPT-4o-mini</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="h-3 w-3 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span class="text-xs font-mono text-emerald-400 font-semibold uppercase tracking-wider">HNSW Vector Store Active</span>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      
+      <!-- Left Column: Ingestion Form & Semantic Search -->
+      <div class="lg:col-span-1 space-y-6">
+        
+        <!-- Document Ingestion Card -->
+        <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-6 shadow-xl backdrop-blur">
+          <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+            Ingest Knowledge / CRM Note
+          </h2>
+          
+          <%= form_with model: Document.new, url: documents_path, class: "space-y-4" do |f| %>
+            <div>
+              <%= f.label :title, "Document Title", class: "block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1" %>
+              <%= f.text_field :title, class: "w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none", placeholder: "e.g., Enterprise Client Renewal" %>
+            </div>
+
+            <div>
+              <%= f.label :source_type, "Source Type", class: "block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1" %>
+              <%= f.select :source_type, [["CRM Note", "crm_note"], ["Security Review", "security_review"], ["Email Thread", "email"], ["Knowledge Base", "kb_article"]], {}, class: "w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none" %>
+            </div>
+
+            <div>
+              <%= f.label :content, "Content", class: "block text-xs font-medium text-slate-300 uppercase tracking-wider mb-1" %>
+              <%= f.text_area :content, rows: 4, class: "w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none", placeholder: "Paste raw interaction or enterprise notes..." %>
+            </div>
+
+            <%= f.submit "Ingest & Auto-Enrich", class: "w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-2.5 px-4 rounded-lg text-sm transition shadow-lg shadow-indigo-600/30 cursor-pointer" %>
+          <% end %>
+        </div>
+
+        <!-- Semantic Vector Search Card -->
+        <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-6 shadow-xl backdrop-blur">
+          <h2 class="text-lg font-bold text-white mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+            Semantic Search Test
+          </h2>
+
+          <%= form_with url: root_path, method: :get, class: "space-y-4" do |f| %>
+            <div>
+              <%= f.text_field :query, value: params[:query], class: "w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:ring-2 focus:ring-blue-500 focus:outline-none", placeholder: "Ask in natural language..." %>
+            </div>
+            <%= f.submit "Execute Vector Search", class: "w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-2 px-4 rounded-lg text-sm transition cursor-pointer" %>
+          <% end %>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Document & CRM Intelligence Stream -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <% if @search_results.present? %>
+          <div class="bg-indigo-950/40 border border-indigo-800/60 rounded-xl p-6 mb-6">
+            <h3 class="text-md font-bold text-indigo-300 mb-4 flex items-center justify-between">
+              <span>Vector Similarity Search Results</span>
+              <span class="text-xs bg-indigo-900/80 text-indigo-300 border border-indigo-700/50 px-2.5 py-1 rounded-full font-mono"><%= @search_results.count %> Matches Found</span>
+            </h3>
+            <div class="space-y-4">
+              <% @search_results.each do |doc| %>
+                <div class="bg-slate-900/90 border border-slate-800 rounded-lg p-4">
+                  <div class="flex justify-between items-start">
+                    <h4 class="font-semibold text-white"><%= doc.title %></h4>
+                    <span class="bg-emerald-950 text-emerald-400 border border-emerald-800/60 text-xs px-2 py-0.5 rounded font-mono">
+                      <%= ((1.0 - doc.neighbor_distance) * 100).round(1) %>% Match
+                    </span>
+                  </div>
+                  <p class="text-slate-300 text-xs mt-2 line-clamp-2"><%= doc.content %></p>
+                </div>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+
+        <!-- Recent Enterprise Documents Grid -->
+        <div class="bg-slate-800/80 border border-slate-700/60 rounded-xl p-6 shadow-xl">
+          <h2 class="text-lg font-bold text-white mb-6">Enterprise Knowledge Stream & AI Insights</h2>
+          
+          <div class="space-y-6">
+            <% @documents.each do |doc| %>
+              <div class="bg-slate-900/90 border border-slate-700/50 rounded-xl p-5 hover:border-slate-600 transition">
+                <div class="flex justify-between items-start mb-3">
+                  <div>
+                    <h3 class="text-base font-bold text-white"><%= doc.title %></h3>
+                    <span class="inline-block mt-1 bg-slate-800 text-slate-400 text-xs px-2.5 py-0.5 rounded-full border border-slate-700 uppercase tracking-wider font-mono"><%= doc.source_type %></span>
+                  </div>
+                  <span class="text-xs text-slate-500 font-mono"><%= time_ago_in_words(doc.created_at) %> ago</span>
+                </div>
+
+                <p class="text-slate-300 text-sm mb-4 bg-slate-950/60 p-3 rounded-lg border border-slate-800/80"><%= doc.content %></p>
+
+                <!-- AI Enrichment Metadata Card -->
+                <% if doc.metadata&.dig("enrichment").present? %>
+                  <% enrichment = doc.metadata["enrichment"] %>
+                  <div class="bg-slate-950/90 border border-indigo-900/40 rounded-lg p-4 space-y-3">
+                    <div class="flex flex-wrap items-center gap-3">
+                      <span class="text-xs font-semibold uppercase text-slate-400 font-mono">AI Classification:</span>
+                      
+                      <!-- Sentiment Badge -->
+                      <span class="text-xs font-medium px-2.5 py-0.5 rounded-full border <%= enrichment['sentiment'] == 'positive' ? 'bg-emerald-950 text-emerald-400 border-emerald-800' : 'bg-amber-950 text-amber-400 border-amber-800' %>">
+                        <%= enrichment['sentiment']&.capitalize %>
+                      </span>
+
+                      <!-- Priority Badge -->
+                      <span class="text-xs font-medium px-2.5 py-0.5 rounded-full border <%= enrichment['priority'] == 'urgent' || enrichment['priority'] == 'high' ? 'bg-rose-950 text-rose-400 border-rose-800' : 'bg-slate-800 text-slate-300 border-slate-700' %>">
+                        Priority: <%= enrichment['priority']&.capitalize %>
+                      </span>
+
+                      <% if enrichment['account_tag'].present? %>
+                        <span class="text-xs font-medium bg-blue-950 text-blue-400 border border-blue-800 px-2.5 py-0.5 rounded-full">
+                          <%= enrichment['account_tag'] %>
+                        </span>
+                      <% end %>
+                    </div>
+
+                    <% if enrichment['action_items'].present? && enrichment['action_items'].any? %>
+                      <div class="pt-2 border-t border-slate-800/80">
+                        <span class="text-xs font-medium text-slate-400 block mb-1">Extracted Action Items:</span>
+                        <ul class="list-disc list-inside text-xs text-slate-300 space-y-1">
+                          <% enrichment['action_items'].each do |item| %>
+                            <li><%= item %></li>
+                          <% end %>
+                        </ul>
+                      </div>
+                    <% end %>
+                  </div>
+                <% else %>
+                  <div class="flex items-center gap-2 text-xs text-amber-400/80 bg-amber-950/20 border border-amber-900/30 p-2.5 rounded-lg">
+                    <span class="h-2 w-2 rounded-full bg-amber-400 animate-ping"></span>
+                    Sidekiq AI Metadata Enrichment in progress...
+                  </div>
+                <% end %>
+
+              </div>
+            <% end %>
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+</div>
